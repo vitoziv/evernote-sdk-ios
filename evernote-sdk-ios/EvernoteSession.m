@@ -96,6 +96,7 @@
 @synthesize consumerSecret = _consumerSecret;
 @synthesize tokenSecret = _tokenSecret;
 
+@synthesize authViewShownCompletion = _authViewShownCompletion;
 @synthesize completionHandler = _completionHandler;
 @synthesize queue = _queue;
 @dynamic authenticationToken;
@@ -649,7 +650,10 @@
 - (void)openOAuthViewControllerWithURL:(NSURL *)authorizationURL
 {
     // Auth view will show ,execute callback
-    self.authViewShownCompletion();
+    if (self.authViewShownCompletion) {
+        self.authViewShownCompletion();
+        self.authViewShownCompletion = nil;
+    }
     
     BOOL isSwitchAllowed = NO;
     if([self.profiles count]>1) {
