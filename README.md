@@ -1,11 +1,17 @@
-Evernote SDK 改进版
+Evernote SDK IOS改进版
 =========================================
-Evernote SDK的用户验证方法需要经过几个url请求，然后弹出验证界面。在网络环境差的地点将会导致用户点击验证后一段时间内无反应。
+Evernote SDK IOS的用户验证方法需要经过几个url请求，然后弹出验证界面。在网络环境差的地点将会导致用户点击验证后一段时间内无反应。
 
-现在的需求是：
+需求是：
 - 用户开始验证（后台进行），弹出一个验证提示。
 - 验证界面弹出，去除验证提示。
 
+问题是：原版本Evernote SDK IOS没有方法让我们知道什么时候验证界面弹出了。
+
+#功能
+用户验证界面弹出前，可以执行回调方法。
+
+#code
 改版EvernoteSDK中添加的方法：
 
     /** Authenticate, calling the given handler upon completion.
@@ -20,6 +26,9 @@ Evernote SDK的用户验证方法需要经过几个url请求，然后弹出验�
                    authViewShownCompletion:(EvernoteAuthViewShownnCompletion)authViewShownCompletion
                          completionHandler:(EvernoteAuthCompletionHandler)completionHandler;
 
+重点在``authViewShownCompletion``参数，它是一个代码块，在验证界面弹出前将会执行它。
 
 
-For more Evernote SDK information check [here](https://github.com/evernote/evernote-sdk-ios)
+-------------
+
+这里是Evernote SDK官方说明 [evernote-sdk-ios](https://github.com/evernote/evernote-sdk-ios)
