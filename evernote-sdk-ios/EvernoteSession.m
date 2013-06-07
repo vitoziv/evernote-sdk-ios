@@ -48,6 +48,7 @@
 
 @property (nonatomic, strong) ENCredentialStore *credentialStore;
 
+@property (nonatomic, copy) EvernoteAuthViewShownnCompletion authViewShownCompletion;
 @property (nonatomic, copy) EvernoteAuthCompletionHandler completionHandler;
 @property (nonatomic, copy) NSString *tokenSecret;
 
@@ -346,6 +347,14 @@
 }
 
 - (void)authenticateWithViewController:(UIViewController *)viewController
+               authViewShownCompletion:(EvernoteAuthViewShownnCompletion)authViewShownCompletion
+                     completionHandler:(EvernoteAuthCompletionHandler)completionHandler
+{
+    self.authViewShownCompletion = authViewShownCompletion;
+    [self authenticateWithViewController:viewController completionHandler:completionHandler];
+}
+
+- (void)authenticateWithViewController:(UIViewController *)viewController
                      completionHandler:(EvernoteAuthCompletionHandler)completionHandler
 {
     self.viewController = viewController;
@@ -639,6 +648,9 @@
 
 - (void)openOAuthViewControllerWithURL:(NSURL *)authorizationURL
 {
+    // Auth view will show ,execute callback
+    self.authViewShownCompletion();
+    
     BOOL isSwitchAllowed = NO;
     if([self.profiles count]>1) {
         isSwitchAllowed = YES;

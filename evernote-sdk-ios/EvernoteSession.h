@@ -45,6 +45,11 @@
 typedef void (^EvernoteAuthCompletionHandler)(NSError *error);
 
 /**
+ * Post authentication view shown callback.
+ */
+typedef void (^EvernoteAuthViewShownnCompletion)(void);
+
+/**
  * Service options.
  */
 typedef enum {
@@ -179,6 +184,18 @@ typedef NS_ENUM(NSInteger, ENSessionState) {
  @param completionHandler This block will be called once the authentication process is completed with sucess or failure.
 */
 - (void)authenticateWithViewController:(UIViewController *)viewController
+                     completionHandler:(EvernoteAuthCompletionHandler)completionHandler;
+
+/** Authenticate, calling the given handler upon completion.
+ 
+ This should be called to kick off the authentication process with Evernote.
+ 
+ @param viewController The view controller that should be used to present the authentication view
+ @param authViewShownCompletion This block will be called once authentication view pop up
+ @param completionHandler This block will be called once the authentication process is completed with sucess or failure.
+ */
+- (void)authenticateWithViewController:(UIViewController *)viewController
+               authViewShownCompletion:(EvernoteAuthViewShownnCompletion)authViewShownCompletion
                      completionHandler:(EvernoteAuthCompletionHandler)completionHandler;
 
 /** Check if the Evernote app is installed.
