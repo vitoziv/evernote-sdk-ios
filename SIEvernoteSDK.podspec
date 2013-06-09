@@ -13,5 +13,5 @@ Pod::Spec.new do |s|
     'evernote-sdk-ios/3rdParty/{AFNetworking,KSHTMLWriter,NSString+URLEncoding,Thrift,cocoa-oauth}/**/*.{h,m}'
   s.frameworks = 'Foundation', 'Security', 'StoreKit'
 
-  s.dependency 'SSKeychain', '0.2.1'
+  s.dependency 'SSKeychain'
 end
