@@ -1,5 +1,5 @@
 Evernote SDK 1.2.1 IOS改进版
-=========================================
+
 Evernote SDK IOS的用户验证方法需要经过几个url请求，然后弹出验证界面。在网络环境差的地点将会导致用户点击验证后一段时间内无反应。
 
 需求是：
@@ -27,7 +27,6 @@ Evernote SDK IOS的用户验证方法需要经过几个url请求，然后弹出�
                          completionHandler:(EvernoteAuthCompletionHandler)completionHandler;
 
 重点在``authViewShownCompletion``参数，它是一个代码块，在验证界面弹出前将会执行它。
-
 
 -------------
 

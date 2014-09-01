@@ -66,7 +66,8 @@ typedef void (^EvernoteErrorBlock) (NSError *error);
                                    @"Operation denied due to data model limit, where there were too few of something.",
                                    @"Operation denied due to data model limit, where there were too many of something.",
                                    @"Operation denied because it is currently unsupported.",
-                                   @"Operation denied because access to the corresponding object is prohibited in response to a take-down notice."];
+                                   @"Operation denied because access to the corresponding object is prohibited in response to a take-down notice.",
+                                   @"Operation denied because the calling application has reached its hourly API call limit for this user."];
     }
     return self;
 }
@@ -90,6 +91,7 @@ typedef void (^EvernoteErrorBlock) (NSError *error);
 {
     if (exception) {
         int errorCode = EDAMErrorCode_UNKNOWN;
+        NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithDictionary:exception.userInfo];
         if ([exception respondsToSelector:@selector(errorCode)]) {
             // Evernote Thrift exception classes have an errorCode property
             errorCode = [(id)exception errorCode];
@@ -97,13 +99,24 @@ typedef void (^EvernoteErrorBlock) (NSError *error);
             // treat any Thrift errors as a transport error
             // we could create separate error codes for the various TException subclasses
             errorCode = EvernoteSDKErrorCode_TRANSPORT_ERROR;
+            if([exception.description length] >0) {
+                userInfo[NSLocalizedDescriptionKey] = exception.description;
+            }
         }
-        NSMutableDictionary *userInfo = [NSMutableDictionary dictionaryWithDictionary:exception.userInfo];
-        if(errorCode>=EDAMErrorCode_UNKNOWN && errorCode<=EDAMErrorCode_UNSUPPORTED_OPERATION) {
+        if(errorCode>=EDAMErrorCode_UNKNOWN && errorCode<=EDAMErrorCode_RATE_LIMIT_REACHED) {
             // being defensive here
-            if(self.errorDescriptions && self.errorDescriptions.count>=EDAMErrorCode_UNSUPPORTED_OPERATION) {
+            if(self.errorDescriptions && self.errorDescriptions.count>=EDAMErrorCode_RATE_LIMIT_REACHED) {
                 if(userInfo[NSLocalizedDescriptionKey] == nil) {
                     userInfo[NSLocalizedDescriptionKey] = self.errorDescriptions[errorCode-1];
+                }
+                if([exception isKindOfClass:[EDAMSystemException class]] == YES) {
+                    EDAMSystemException* systemException = (EDAMSystemException*)exception;
+                    if ([systemException rateLimitDurationIsSet]) {
+                        userInfo[@"rateLimitDuration"] = @([systemException rateLimitDuration]);
+                    }
+                    if ([systemException messageIsSet]) {
+                        userInfo[@"message"] = [systemException message];
+                    }
                 }
             }
         }
@@ -215,31 +228,14 @@ typedef void (^EvernoteErrorBlock) (NSError *error);
 }
 
 - (void)processError:(EvernoteErrorBlock)errorBlock withError:(NSError*)error {
-    // See if we can trigger OAuth automatically
-    BOOL didTriggerAuth = NO;
     if([EvernoteSession isTokenExpiredWithError:error]) {
         [self.session logout];
-        UIViewController* topVC = [UIApplication sharedApplication].keyWindow.rootViewController;
-        if(!topVC.presentedViewController && topVC.isViewLoaded) {
-            didTriggerAuth = YES;
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [self.session authenticateWithViewController:topVC completionHandler:^(NSError *authError) {
-                    if(errorBlock) {
-                        errorBlock(authError);
-                    }
-                }];
-            });
+    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if(errorBlock) {
+            errorBlock(error);
         }
-        
-    }
-    // If we were not able to trigger auth, send the error over to the client
-    if(didTriggerAuth==NO) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if(errorBlock) {
-                errorBlock(error);
-            }
-        });
-    }
+    });
 }
 
 @end
